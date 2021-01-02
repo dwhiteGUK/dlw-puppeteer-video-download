@@ -40,18 +40,22 @@ const readLine = require('readline').createInterface({
 (() => {
 
   try {
-    // example web address e.g. https://tapestryjournal.com 
-    readLine.question('Enter web address: ', async (url) => {
+    // e.g https://tapestryjournal.com/s/spring-cottage-nursery/observation/5140
+    readLine.question('Enter web address: ', async (webAddress) => {
+
+      // extract origin - used for login
+      // and then downloading video from post
+      const url = new URL(webAddress);
 
       const browser = await puppeteer.launch({
         headless: false,
-        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
       });
       const page = await browser.newPage();
 
 
       // navigate to URL 
-      await page.goto(url);
+      await page.goto(url.origin);
 
       // enter login details
       await page.click("aria/Email address");
@@ -62,34 +66,31 @@ const readLine = require('readline').createInterface({
 
       await page.waitForNavigation();
 
-      readLine.question('Enter observation address: ', async (videolink) => {
-        // e.g https://tapestryjournal.com/s/spring-cottage-nursery/observation/5140
 
-        await page.goto(videolink, { waitUntil: 'load' });
+      await page.goto(url.href, { waitUntil: 'load' });
 
 
-        const videoName = await page.evaluate(() => {
-          const fileName = 'download-link';
+      const videoName = await page.evaluate(async () => {
+        const fileName = 'download-link';
 
-          const el = document.querySelector('video');
-          const src = el.querySelector('source').src;
+        const el = document.querySelector('video');
+        const src = el.querySelector('source').src;
 
-          const downloadLink = document.createElement('a');
-          downloadLink.innerText = 'Download Video'
-          downloadLink.href = src;
-          downloadLink.download = fileName;
+        const downloadLink = document.createElement('a');
+        downloadLink.innerText = 'Download Video'
+        downloadLink.href = src;
+        downloadLink.download = fileName;
 
-          document.querySelector('body').appendChild(downloadLink);
+        document.querySelector('body').appendChild(downloadLink);
 
-          return fileName;
-        });
-
-        await page.click(`[download="${videoName}"]`);
-
-        // await checkExistsWithTimeout(`/Users/dwhite/Downloads/${videoName}`, 10000);
-
-        // await browser.close();
+        return fileName;
       });
+
+      await page.click(`[download="${videoName}"]`);
+
+      // await checkExistsWithTimeout(`/Users/dwhite/Downloads/${videoName}`, 10000);
+
+      // await browser.close();
     });
   } catch (error) {
     console.error(error);
