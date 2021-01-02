@@ -16,7 +16,7 @@ function checkExistsWithTimeout(filePath, timeout) {
       if (!err) {
         clearTimeout(timer);
         watcher.close();
-        resolve();
+        resolve(`${filePath} exists`);
       }
     });
 
@@ -26,7 +26,7 @@ function checkExistsWithTimeout(filePath, timeout) {
       if (eventType === 'rename' && filename === basename) {
         clearTimeout(timer);
         watcher.close();
-        resolve();
+        resolve(`${filename} exists`);
       }
     });
   });
@@ -37,7 +37,7 @@ const readLine = require('readline').createInterface({
   output: process.stdout
 });
 
-(() => {
+(async () => {
 
   try {
     // e.g https://tapestryjournal.com/s/spring-cottage-nursery/observation/5140
@@ -70,11 +70,11 @@ const readLine = require('readline').createInterface({
       await page.goto(url.href, { waitUntil: 'load' });
 
 
-      const videoName = await page.evaluate(async () => {
+      const { fileName, fileType } = await page.evaluate(async () => {
         const fileName = 'download-link';
 
         const el = document.querySelector('video');
-        const src = el.querySelector('source').src;
+        const { src, type } = el.querySelector('source');
 
         const downloadLink = document.createElement('a');
         downloadLink.innerText = 'Download Video'
@@ -83,17 +83,21 @@ const readLine = require('readline').createInterface({
 
         document.querySelector('body').appendChild(downloadLink);
 
-        return fileName;
+        return { fileName, fileType: type.split('/')[1] };
       });
 
-      await page.click(`[download="${videoName}"]`);
+      await page.click(`[download="${fileName}"]`);
 
-      // await checkExistsWithTimeout(`/Users/dwhite/Downloads/${videoName}`, 10000);
+      const res = await checkExistsWithTimeout(`/Users/dwhite/Downloads/${fileName}.${fileType}`, 30000);
+      console.log('🚀 ~ file: index.js ~ line 47 ~ res', res);
 
-      // await browser.close();
+      await browser.close();
+
+      process.exit();
     });
   } catch (error) {
     console.error(error);
+    await browser.close();
   }
 })();
 
