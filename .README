@@ -1,0 +1,30 @@
+# Download MP4
+
+## Requirements
+
+- Node 14
+- NPM 6
+
+## Installation
+
+```bash
+npm install
+```
+
+## Example Usage
+
+Add .env file with username and password. Update 
+
+```
+executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+```
+
+With the path to chrome
+
+Run
+
+```bash
+node index
+```
+
+The command line will prompt for the initial web address. 
