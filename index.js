@@ -39,7 +39,14 @@ const readLine = require('readline').createInterface({
 
 (async () => {
 
+  let browser;
+
   try {
+    browser = await puppeteer.launch({
+      headless: false,
+      //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    });
+
     // e.g https://tapestryjournal.com/s/spring-cottage-nursery/observation/5140
     readLine.question('Enter web address: ', async (webAddress) => {
 
@@ -47,10 +54,6 @@ const readLine = require('readline').createInterface({
       // and then downloading video from post
       const url = new URL(webAddress);
 
-      const browser = await puppeteer.launch({
-        headless: false,
-        //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-      });
       const page = await browser.newPage();
 
 
@@ -89,7 +92,6 @@ const readLine = require('readline').createInterface({
       await page.click(`[download="${fileName}"]`);
 
       const res = await checkExistsWithTimeout(`/Users/dwhite/Downloads/${fileName}.${fileType}`, 30000);
-      console.log('🚀 ~ file: index.js ~ line 47 ~ res', res);
 
       await browser.close();
 
