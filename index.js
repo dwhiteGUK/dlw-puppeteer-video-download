@@ -47,7 +47,7 @@ const readLine = require('readline').createInterface({
       //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     });
 
-    // e.g https://tapestryjournal.com/s/spring-cottage-nursery/observation/5140
+    // e.g https://example.com/post/example/5140
     readLine.question('Enter web address: ', async (webAddress) => {
 
       // extract origin - used for login
@@ -74,10 +74,12 @@ const readLine = require('readline').createInterface({
 
 
       const { fileName, fileType } = await page.evaluate(async () => {
-        const fileName = 'download-link';
-
         const el = document.querySelector('video');
         const { src, type } = el.querySelector('source');
+
+        // filename from src attribute
+        const fileUrl = new URL(src);
+        const fileName = fileUrl.pathname.substring(fileUrl.pathname.lastIndexOf('/') + 1);
 
         const downloadLink = document.createElement('a');
         downloadLink.innerText = 'Download Video'
@@ -91,7 +93,7 @@ const readLine = require('readline').createInterface({
 
       await page.click(`[download="${fileName}"]`);
 
-      const res = await checkExistsWithTimeout(`/Users/dwhite/Downloads/${fileName}.${fileType}`, 30000);
+      const res = await checkExistsWithTimeout(`/Users/dwhite/Downloads/${fileName}`, 30000);
 
       await browser.close();
 
